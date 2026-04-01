@@ -344,6 +344,8 @@ small {
 
 .demo-panel-content {
   padding: 16px;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .demo-panel-content > p {
