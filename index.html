@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Co-op Support Application</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav id="navbar">
+  <span>Co-op Support Application</span>
+  <a onclick="showPage('home')">Home</a>
+  <a onclick="showPage('apply')">Apply</a>
+  <a id="nav-student" style="display:none" onclick="showPage('student-portal')">Student Portal</a>
+  <a onclick="showPage('supervisor-register')">Supervisor</a>
+  <a id="nav-coord" style="display:none" onclick="showPage('coordinator')">Coordinator</a>
+  <a onclick="showPage('login')">Login</a>
+  <div id="nav-status-container" style="margin-left:auto; display: flex; align-items: center; gap: 12px;">
+    <span id="nav-status" class="nav-status">not signed in</span>
+    <a id="nav-logout" style="display:none" onclick="logout()">Logout</a>
+  </div>
+</nav>
+
+<!-- home -->
+<div id="page-home" class="page active">
+  <h2>Co-op Support Application</h2>
+  <p>Welcome to the CSA Co-op portal. Use the navigation above to:</p>
+  <ul style="margin:12px 0 0 20px;line-height:2">
+    <li><strong>Apply</strong> – Submit a co-op application (name, student ID, email)</li>
+    <li><strong>Login</strong> – Students log in to submit work term reports</li>
+    <li><strong>Supervisor</strong> – Supervisors register and submit evaluations</li>
+    <li><strong>Coordinator</strong> – Review applications, accept/reject, manage deadlines</li>
+  </ul>
+</div>
+
+<!-- apply -->
+<div id="page-apply" class="page">
+  <h2>Apply for Co-op</h2>
+  <div id="apply-msg"></div>
+  <label>Full Name</label>
+  <input type="text" id="apply-name" placeholder="Jane Doe">
+  <label>Student ID</label>
+  <input type="text" id="apply-id" placeholder="100123456">
+  <label>Email</label>
+  <input type="email" id="apply-email" placeholder="jane@university.edu">
+  <button onclick="submitApplication()">Submit Application</button>
+</div>
+
+<!-- login -->
+<div id="page-login" class="page">
+  <h2>Login</h2>
+  <div id="login-msg"></div>
+  <div class="tabs">
+    <button class="active" onclick="switchLoginTab('student',this)">Student</button>
+    <button onclick="switchLoginTab('coord',this)">Coordinator</button>
+  </div>
+  <div id="login-student" class="section active">
+    <label>Student ID</label>
+    <input type="text" id="login-sid" placeholder="100123456">
+    <label>Password</label>
+    <input type="password" id="login-spw" placeholder="password">
+    <button onclick="loginStudent()">Login</button>
+    <p style="margin-top:10px"><small>Only provisionally accepted students can log in. Default password = student ID.</small></p>
+  </div>
+  <div id="login-coord" class="section">
+    <label>Username</label>
+    <input type="text" id="login-cu" placeholder="coord">
+    <label>Password</label>
+    <input type="password" id="login-cpw" placeholder="coord123">
+    <button onclick="loginCoord()">Login</button>
+  </div>
+</div>
+
+<!-- student portal -->
+<div id="page-student-portal" class="page">
+  <h2>Student Portal</h2>
+  <div id="student-msg"></div>
+  <div id="student-status-info" style="margin-bottom:16px"></div>
+  <div class="tabs">
+    <button onclick="switchTab('student','report',this)">Submit Report</button>
+    <button class="active" onclick="switchTab('student','my-status',this)">My Status</button>
+  </div>
+  <div id="student-report" class="section">
+    <h3>Upload Work Term Report (PDF)</h3>
+    <div id="report-msg"></div>
+    <label>Work Term</label>
+    <input type="text" id="report-term" placeholder="e.g. Fall 2024">
+    <label>PDF Report File</label>
+    <input type="file" id="report-file" accept=".pdf" style="margin-bottom:12px">
+    <p><small>Deadline: <strong id="report-deadline-display">—</strong></small></p>
+    <button onclick="submitReport()" style="margin-top:8px">Submit Report</button>
+    <p style="margin-top:10px"><small>No template yet? <a href="#" onclick="downloadTemplate()">Download template (demo)</a></small></p>
+  </div>
+  <div id="student-my-status" class="section active">
+    <h3>Application &amp; Report Status</h3>
+    <div id="my-status-content"></div>
+  </div>
+</div>
+
+<!-- supervisor register/login -->
+<div id="page-supervisor-register" class="page">
+  <h2>Supervisor Portal</h2>
+  <div id="sup-msg"></div>
+  <div class="tabs">
+    <button id="sup-login-tab" class="active" onclick="switchTab('sup','login',this)">Login</button>
+  </div>
+  <div id="sup-login" class="section active">
+    <label>Email</label>
+    <input type="email" id="sup-lemail" placeholder="smith@acme.com">
+    <label>Password</label>
+    <input type="password" id="sup-lpw" placeholder="password">
+    <button onclick="loginSupervisor()">Login</button>
+  </div>
+  <div id="sup-eval" class="section">
+    <h3>Submit Employer Evaluation</h3>
+    <div id="eval-msg"></div>
+    <label>Student ID being evaluated</label>
+    <input type="text" id="eval-sid" placeholder="100123456">
+    <label>Work Term</label>
+    <input type="text" id="eval-term" placeholder="e.g. Fall 2024">
+    <div class="tabs" style="margin-top:8px">
+      <button class="active" onclick="switchTab('eval-method','form',this)">Online Form</button>
+      <button onclick="switchTab('eval-method','pdf',this)">Upload PDF</button>
+    </div>
+    <div id="eval-method-form" class="section active">
+      <label>Behavior (1–5)</label>
+      <select id="eval-behavior"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select>
+      <label>Skills (1–5)</label>
+      <select id="eval-skills"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select>
+      <label>Knowledge (1–5)</label>
+      <select id="eval-knowledge"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select>
+      <label>Attitude (1–5)</label>
+      <select id="eval-attitude"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select>
+      <label>Comments</label>
+      <textarea id="eval-comments" rows="3" placeholder="Additional feedback..."></textarea>
+    </div>
+    <div id="eval-method-pdf" class="section">
+      <label>Scanned Evaluation PDF</label>
+      <input type="file" id="eval-file" accept=".pdf" style="margin-bottom:12px">
+    </div>
+    <button onclick="submitEvaluation()" style="margin-top:4px">Submit Evaluation</button>
+  </div>
+</div>
+
+<!-- coord -->
+<div id="page-coordinator" class="page">
+  <h2>Coordinator Dashboard</h2>
+  <div id="coord-msg"></div>
+  <div class="tabs">
+    <button class="active" onclick="switchTab('coord','apps',this)">Applications</button>
+    <button onclick="switchTab('coord','reports',this)">Reports &amp; Evaluations</button>
+    <button onclick="switchTab('coord','supervisors',this)">Supervisors</button>
+    <button onclick="switchTab('coord','settings',this)">Settings</button>
+    <button onclick="switchTab('coord','reminders',this)">Reminders</button>
+  </div>
+  <div id="coord-apps" class="section active">
+    <h3>All Applications</h3>
+    <input type="text" id="coord-search" placeholder="Search by name or student ID..." oninput="renderApplications()" style="margin-bottom:8px">
+    <div id="applications-table"></div>
+  </div>
+  <div id="coord-reports" class="section">
+    <h3>Reports &amp; Evaluations</h3>
+    <div id="reports-table"></div>
+  </div>
+  <div id="coord-supervisors" class="section">
+    <h3>Manage Supervisors</h3>
+    <div id="coord-sup-msg"></div>
+    <label>Full Name</label>
+    <input type="text" id="coord-sup-name" placeholder="Dr. Smith">
+    <label>Company</label>
+    <input type="text" id="coord-sup-company" placeholder="Acme Corp">
+    <label>Email</label>
+    <input type="email" id="coord-sup-email" placeholder="smith@acme.com">
+    <label>Password</label>
+    <input type="password" id="coord-sup-pw" placeholder="auto-generated password">
+    <button onclick="createSupervisor()">Create Supervisor Account</button>
+    <h4 style="margin-top:20px">All Supervisors</h4>
+    <div id="supervisors-list" style="font-size:13px"></div>
+  </div>
+  <div id="coord-settings" class="section">
+    <h3>Deadline Settings</h3>
+    <label>Report Submission Deadline</label>
+    <input type="date" id="deadline-input">
+    <button onclick="saveDeadline()">Save Deadline</button>
+    <div id="deadline-msg" style="margin-top:8px"></div>
+  </div>
+  <div id="coord-reminders" class="section">
+    <h3>Email Reminders</h3>
+    <p style="margin-bottom:12px">Send reminders to accepted students who have not yet submitted a report.</p>
+    <div id="reminders-list"></div>
+    <button onclick="sendReminders()" style="margin-top:12px">Send Reminders to All Missing</button>
+    <div id="reminder-msg" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- demo panel overlay -->
+<div id="demo-panel-overlay" class="demo-panel-overlay">
+  <div class="demo-panel">
+    <div class="demo-panel-header">
+      <span>Demo Panel</span>
+      <button class="demo-close-btn" onclick="toggleDemoPanel()">×</button>
+    </div>
+    <div class="demo-panel-content">
+      <p>quickstart: load a demo account below</p>
+      <button class="demo-btn demo-student" onclick="setupDemoStudent()">Demo Student</button>
+      <button class="demo-btn demo-sup" onclick="setupDemoSupervisor()">Demo Supervisor</button>
+      <button class="demo-btn demo-coord" onclick="setupDemoCoord()">Demo Coordinator</button>
+      <button class="demo-btn demo-clear" onclick="clearDemoData()">Clear All Data</button>
+      <div style="margin-top: 12px; border-top: 1px solid #eee; padding-top: 12px;">
+        <p style="font-size: 11px; color: #999; margin-bottom: 8px;">populate:</p>
+        <label style="font-size: 11px;"># of students</label>
+        <input type="number" id="populate-count" value="5" style="width: 100%; padding: 4px; font-size: 11px; margin-bottom: 8px;">
+        <button class="demo-btn" onclick="populateRandomStudents()" style="background-color: #2521f3; margin-bottom: 12px;">Populate Students</button>
+      </div>
+      <div style="margin-top: 12px; border-top: 1px solid #eee; padding-top: 12px;">
+        <p style="font-size: 11px; color: #999; margin-bottom: 6px;"><strong>Students:</strong></p>
+        <div id="demo-students-list" style="font-size: 10px; max-height: 120px; overflow-y: auto; background: #f5f5f5; padding: 8px; border-radius: 3px;"></div>
+      </div>
+      <div style="margin-top: 8px;">
+        <p style="font-size: 11px; color: #999; margin-bottom: 6px;"><strong>Supervisors:</strong></p>
+        <div id="demo-supervisors-list" style="font-size: 10px; max-height: 80px; overflow-y: auto; background: #f5f5f5; padding: 8px; border-radius: 3px;"></div>
+      </div>
+      <div style="margin-top: 8px;">
+        <p style="font-size: 11px; color: #999; margin-bottom: 6px;"><strong>Coordinators:</strong></p>
+        <div id="demo-coordinators-list" style="font-size: 11px; background: #f5f5f5; padding: 8px; border-radius: 3px; font-family: monospace;"><strong>id:</strong> coord | <strong>pw:</strong> coord123</div>
+      </div>
+      <div id="demo-message" class="demo-msg" style="margin-top: 12px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- toggle demo button -->
+<button id="demo-toggle" class="demo-toggle-btn" onclick="toggleDemoPanel()" title="Open demo panel">DEMO</button>
+
+<script src="app.js"></script>
+</body>
+</html>
